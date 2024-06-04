@@ -35,6 +35,8 @@ const contractSchema = new mongoose.Schema({
 
 const Contract = mongoose.model("Contract", contractSchema);
 
+app.use('/uploads', express.static('./uploads'))
+
 app.post("/upload/contract", upload.single("contract"), async(req, res) => {
     const body = req.body;
     const file = req.file;
@@ -83,22 +85,18 @@ app.get("/download/contract/:memberId", async(req, res) => {
         if (!contract) {
             return res.status(404).json({
                 data: {
-                    message: "NOT_FOUND",
-                    details: "No contract found for the provided memberId",
+                    message: null,
+                    details: null,
                 },
             });
         }
 
-        const filePath = path.resolve(contract.filePath);
-        res.download(filePath, contract.fileName, (err) => {
-            if (err) {
-                res.status(500).json({
-                    data: {
-                        message: "SERVER_ERROR",
-                        details: "An error occurred while downloading the file",
-                    },
-                });
-            }
+        const downloadUrl = `http://localhost:7500/${contract.filePath.replace('uploads/', 'uploads/')}`;
+        res.status(200).json({
+            data: {
+                message: "SUCCESS",
+                downloadUrl: downloadUrl,
+            },
         });
     } catch (error) {
         res.status(500).json({
@@ -111,4 +109,4 @@ app.get("/download/contract/:memberId", async(req, res) => {
 });
 
 
-app.listen(7500, () => console.log("Running on port 3000"));
+app.listen(7500, () => console.log("Running on port 7500"));
